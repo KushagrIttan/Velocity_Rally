@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#173c36"><title>Velocity Rally · Find your flow</title>
+    <link rel="icon" href="data:,"><link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+<div id="game-container">
+    <canvas id="game-canvas" tabindex="-1" aria-label="Rally racing view"></canvas>
+    <div id="loading" role="status">Building your stage…</div>
+    <div id="race-ui" hidden>
+        <div class="race-top"><div><span id="race-stage"></span><small id="race-car"></small></div><button id="pause-button" aria-label="Pause race">Ⅱ</button></div>
+        <div id="pace-note" role="status"></div>
+        <canvas id="minimap" width="150" height="150" aria-label="Stage map"></canvas>
+        <div id="hud">
+            <div class="speed-block"><span id="ui-speed">0</span><small>KM/H</small><span id="ui-gear">1</span></div>
+            <div class="race-progress"><div><span id="ui-surface">TARMAC</span><span id="ui-damage">Damage 0%</span></div><progress id="ui-progress" max="1" value="0" aria-label="Stage progress"></progress><small id="ui-distance">0 / 0 m</small></div>
+            <div class="race-time"><span id="ui-timer">00:00.00</span><small id="ui-target"></small><small id="ui-delta"></small></div>
+        </div>
+        <div id="race-tip"></div>
+        <div id="touch-controls" aria-label="Touch driving controls">
+            <div><button data-drive="left" aria-label="Steer left">←</button><button data-drive="right" aria-label="Steer right">→</button></div>
+            <div><button data-drive="handbrake" aria-label="Handbrake">HB</button><button data-drive="down" aria-label="Brake">BRAKE</button><button data-drive="up" aria-label="Accelerate">GO</button></div>
+        </div>
+    </div>
+    <div id="pad-status" role="status"></div><div id="countdown" aria-live="assertive"></div><div id="flash-msg" role="status"></div>
+    <main id="main-menu" class="overlay">
+        <div class="menu-shell">
+            <header class="brand"><div><span class="eyebrow">THE ROAD IS YOURS</span><h1>VELOCITY <em>RALLY</em></h1><p>Find a line. Find your flow. Find another second.</p></div><div class="progress-badge"><strong id="campaign-points">0 / 12</strong><small>CAMPAIGN MEDALS</small></div></header>
+            <nav class="mode-tabs" aria-label="Game mode"><button id="campaign-tab" class="active">The campaign</button><button id="daily-tab">Daily rally <span>↗</span></button><button id="school-tab">Driving school</button></nav>
+            <div class="menu-columns">
+                <section class="stage-section"><div class="section-label"><span id="stage-list-title">CHOOSE YOUR ROAD</span><span id="progress-summary"></span></div><div id="stage-list"></div><p id="mode-description" class="muted"></p></section>
+                <section class="garage"><span class="section-label">YOUR MACHINE</span><div id="car-list"></div><label class="field">Livery<select id="livery-select"></select></label><div id="stage-preview"><span id="preview-region" class="eyebrow"></span><h2 id="preview-name"></h2><p id="preview-desc"></p><div id="medal-targets"></div><p id="preview-best" class="muted"></p></div><button id="race-button" class="btn primary" disabled>Loading…</button><p id="storage-status" class="muted"></p></section>
+            </div>
+            <details id="settings"><summary>Settings & controls</summary><div class="settings-grid"><label class="field">Sound volume<input id="volume" type="range" min="0" max="100" value="65"></label><label class="field">Graphics<select id="quality"><option value="low">Low · lighter rendering</option><option value="medium" selected>Medium · balanced</option><option value="high">High · shadows & bloom</option></select></label><label><input id="ghost-toggle" type="checkbox" checked> Personal-best ghost</label><label><input id="voice-toggle" type="checkbox"> Spoken pace notes</label></div><p class="controls">WASD / arrows drive · Space handbrake · B reverse · R recover (+5s) · T retry · C camera · P / Esc pause · H lights<br>Controller: RT accelerate · LT brake · stick steer · A handbrake · X camera · B lights · Y recover · LB reverse · Start pause<br>Touch controls appear on touch devices. Recover from the pause menu if needed.</p></details>
+            <section class="competition"><div class="section-label"><span>STAGE LEADERBOARD</span><button id="refresh-board" class="text-button">Refresh</button></div><p id="board-status" class="muted">Loading standings…</p><ol id="leaderboard"></ol><p id="friend-status" class="muted" hidden></p><button id="clear-friend" class="text-button" hidden>Remove rival ghost</button></section>
+            <footer>Small roads. Big improvements. <span id="build-version"></span></footer>
+        </div>
+    </main>
+    <section id="pause-menu" class="overlay" role="dialog" aria-modal="true" aria-label="Paused" hidden><div class="dialog"><span class="eyebrow">TAKE A BREATH</span><h2>Paused</h2><p>The clock is stopped.</p><button id="resume-button" class="btn primary">Back to the road</button><button id="recover-button" class="btn">Recover car · +5s</button><button id="retry-pause" class="btn">Retry this stage</button><button id="menu-pause" class="text-button">Stage selection</button></div></section>
+    <section id="results-screen" class="overlay" role="dialog" aria-modal="true" aria-label="Stage results" hidden><div class="dialog results"><span id="result-eyebrow" class="eyebrow">STAGE COMPLETE</span><h2 id="result-title">A road well driven.</h2><div id="res-time" class="result-time"></div><p id="result-message"></p><div class="results-grid"><div>Medal<strong id="res-medal"></strong></div><div>Personal best<strong id="res-best"></strong></div><div>Average speed<strong id="res-avg"></strong></div><div>Damage<strong id="res-damage"></strong></div></div><div id="result-splits"></div><p id="result-unlock" class="muted"></p><button id="retry-result" class="btn primary">One more run</button><button id="next-result" class="btn">Next stage</button><button id="menu-result" class="text-button">Stage selection</button><details class="submit-result"><summary>Share this run & compete</summary><label class="field">Driver name<input id="driver-name" maxlength="20" placeholder="Your racing name" autocomplete="nickname"></label><button id="submit-run" class="btn">Submit verified replay</button><p id="submit-status" role="status"></p><button id="share-button" class="text-button">Copy stage link</button><input id="share-link" readonly aria-label="Shareable race link" hidden></details></div></section>
+</div>
+<script type="module" src="./js/main.js"></script>
+</body></html>
